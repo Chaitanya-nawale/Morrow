@@ -1,0 +1,74 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: morrow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: morrow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d morrow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: morrow-api
+    restart: unless-stopped
+    environment:
+      APP_NAME: Morrow
+      APP_ENV: development
+      APP_VERSION: 0.1.0
+      DEBUG: "true"
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/morrow
+      LOG_LEVEL: INFO
+      LOG_FORMAT: console
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps:/app/apps
+      - ./core:/app/core
+      - ./db:/app/db
+      - ./memory:/app/memory
+      - ./agents:/app/agents
+      - ./workflows:/app/workflows
+      - ./tools:/app/tools
+      - ./evaluation:/app/evaluation
+      - ./sandbox:/app/sandbox
+      - ./migrations:/app/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: morrow-worker
+    restart: unless-stopped
+    environment:
+      APP_NAME: Morrow-Worker
+      APP_ENV: development
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/morrow
+      LOG_LEVEL: INFO
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+    command: ["python", "-m", "apps.worker.main"]
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,54 @@
+# Virtual Environment (uv)
+.venv/
+
+# Python Bytecode
+__pycache__/
+*.pyc
+
+# Local Environment, Secrets & Keys
+.env
+.env.*
+*.env
+private/
+*.pem
+*.key
+
+# Packaging & Build Artifacts
+dist/
+build/
+
+# Testing, Coverage & Linters
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Local Database & Storage
+postgres_data/
+*.sqlite3
+*.db
+
+# Frontend Dependencies & Builds (Stage 8 - React / Vite)
+node_modules/
+frontend/dist/
+*.log
+
+# Ingestion, Data & Sandboxing (Stage 3 & 14)
+data/uploads/
+sandbox_data/
+tmp/
+
+# Evaluation Caches & Benchmarks (Stage 7 - DeepEval / Langfuse)
+.deepeval/
+.langfuse/
+eval_results/
+
+# OS & Editor Files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
