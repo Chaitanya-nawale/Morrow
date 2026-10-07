@@ -10,19 +10,21 @@ Remember → Reason → Act → Observe → Learn → Remember
 
 ---
 
-## Stage 1 — Engineering Foundation
+## Implementation Status
 
-This repository currently implements **Stage 1 (Repository + Engineering Foundation)**:
-- **FastAPI** asynchronous application runtime with `/health` and `/version` endpoints.
-- **Pydantic v2** & **pydantic-settings** typed configurations.
-- **SQLModel** (SQLAlchemy 2.0 + Pydantic v2) & **asyncpg** persistence foundation configured for PostgreSQL / NeonDB with `pgvector`.
-- **Alembic** database migration framework configured for asynchronous operations.
-- **Ruff** for high-performance linting and formatting.
-- **Mypy** strict type checking.
-- **pytest** + **pytest-asyncio** + **httpx** test suite.
-- **Multi-stage Dockerfile** utilizing Astral's `uv` package manager and unprivileged runtime user.
-- **docker-compose** setup provisioning the API, background worker, and `pgvector/pgvector:pg16`.
-- **GitHub Actions CI** pipeline enforcing lint, format, type checks, unit tests, and Docker image builds.
+- **Stage 1 — Engineering Foundation**:
+  - FastAPI asynchronous application runtime with `/health` and `/version` endpoints.
+  - Pydantic v2 & `pydantic-settings` typed configurations.
+  - PostgreSQL / NeonDB asyncpg foundation with Docker & docker-compose.
+  - Ruff, Mypy strict mode, pytest test suite, and GitHub Actions CI.
+
+- **Stage 2 — NeonDB / PostgreSQL Data Model & Repositories**:
+  - **10 Core SQLModel Entities**: `User`, `Project`, `Document`, `Memory`, `MemoryLink`, `Task`, `AgentRun`, `AgentEvent`, `ToolCall`, `Approval`.
+  - **pgvector Integration**: Dense vector embeddings (1536-dim) on `Memory` with cosine distance similarity search.
+  - **Graph Evidence Linking**: Directed links between memories (`supports`, `derived_from`, `contradicts`, `consolidates`, `relates_to`).
+  - **Soft-Delete Archiving**: Archival and restoration lifecycle for memories.
+  - **Async Repositories**: Complete typed data access layer (`MemoryRepository`, `UserRepository`, `ProjectRepository`, `DocumentRepository`, `TaskRepository`, `AgentRunRepository`, `ApprovalRepository`).
+  - **Alembic Migrations**: Fully migrated PostgreSQL schema with `vector` extension enabled.
 
 ---
 

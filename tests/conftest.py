@@ -5,10 +5,19 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from apps.api.main import app
 from core.config.settings import Settings
 from core.types.base import DatabaseStatus
+from db.models import SQLModel
+
+TEST_DB_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/morrow_test"
 
 
 @pytest.fixture
@@ -19,7 +28,7 @@ def test_settings() -> Settings:
         app_env="testing",
         app_version="0.1.0-test",
         debug=True,
-        database_url="postgresql+asyncpg://postgres:postgres@localhost:5432/morrow_test",
+        database_url=TEST_DB_URL,
         log_level="DEBUG",
     )
 
@@ -46,3 +55,29 @@ def mock_db_disconnected() -> Generator[AsyncMock, None, None]:
     with patch("apps.api.routes.health.check_db_connection", new_callable=AsyncMock) as mock_check:
         mock_check.return_value = DatabaseStatus.DISCONNECTED
         yield mock_check
+
+
+@pytest.fixture
+async def db_engine() -> AsyncGenerator[AsyncEngine, None]:
+    """Provide an async database engine for testing with schema initialization."""
+    engine = create_async_engine(TEST_DB_URL, echo=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+    yield engine
+    await engine.dispose()
+
+
+@pytest.fixture
+async def db_session(db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+    """Provide a transactional database session rolled back after each test."""
+    session_factory = async_sessionmaker(
+        bind=db_engine,
+        autocommit=False,
+        autoflush=False,
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
+    async with session_factory() as session:
+        yield session
+        await session.rollback()
+        await session.close()
