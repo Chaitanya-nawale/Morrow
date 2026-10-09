@@ -1220,7 +1220,7 @@ When modifying this repository:
 14. Make important state transitions explicit.
 15. Prefer incremental changes over large rewrites.
 16. When a requirement is ambiguous, inspect the repository and existing architecture before inventing behavior.
-17. Before completing a change, run the relevant tests and static checks.
+17. Before completing a change, run formatting, static checks, and tests: `uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy .`, and `uv run pytest`.
 18. If a requested feature conflicts with this architecture, explain the conflict before implementing a workaround.
 
 ---

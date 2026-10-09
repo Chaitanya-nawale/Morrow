@@ -1,10 +1,12 @@
 """Pytest configuration and shared fixtures for test suite."""
 
+import os
 from collections.abc import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -17,7 +19,10 @@ from core.config.settings import Settings
 from core.types.base import DatabaseStatus
 from db.models import SQLModel
 
-TEST_DB_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/morrow_test"
+TEST_DB_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/morrow_test",
+)
 
 
 @pytest.fixture
@@ -62,6 +67,7 @@ async def db_engine() -> AsyncGenerator[AsyncEngine, None]:
     """Provide an async database engine for testing with schema initialization."""
     engine = create_async_engine(TEST_DB_URL, echo=False)
     async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(SQLModel.metadata.create_all)
     yield engine
     await engine.dispose()

@@ -201,8 +201,8 @@ class MemoryRepository(BaseRepository[Memory]):
 
         Returns pairs of (Memory, similarity_score) where similarity is in [-1, 1].
         """
-        distance_col = cast(Any, Memory.embedding).cosine_distance(query_embedding).label(
-            "distance"
+        distance_col = (
+            cast(Any, Memory.embedding).cosine_distance(query_embedding).label("distance")
         )
         stmt = (
             select(Memory, distance_col)

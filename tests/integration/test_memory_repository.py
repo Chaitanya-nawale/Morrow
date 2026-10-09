@@ -252,7 +252,9 @@ async def test_agent_run_and_approval_workflow(db_session: AsyncSession) -> None
     assert len(run.messages) == 1
 
     # Add message
-    await agent_repo.add_message(run.id, {"role": "assistant", "content": "Inspecting repository..."})
+    await agent_repo.add_message(
+        run.id, {"role": "assistant", "content": "Inspecting repository..."}
+    )
     refetched_run = await agent_repo.get_by_id(run.id)
     assert refetched_run is not None
     assert len(refetched_run.messages) == 2
